@@ -1,13 +1,11 @@
 package edu.hanover.sdp2026.core.game;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class Game {
-    private Map<Location, Piece> board = new HashMap<>();
+    private final Board board = new Board();
     private Color turn = Color.WHITE;
 
     public Game() {}
@@ -19,7 +17,7 @@ public class Game {
     }
 
     public ArrayList<Move> computeMoves(Location location) {
-        Piece piece = getPiece(location);
+        Piece piece = board.getPiece(location);
 
         if (piece == null) return null;
 
@@ -36,7 +34,9 @@ public class Game {
         };
     }
 
-    public void makeMove(Move move) {}
+    public void makeMove(Move move) {
+        board.makeMove(move);
+    }
 
     public Color getTurn() {
         return turn;
@@ -47,12 +47,11 @@ public class Game {
     }
 
     Piece getPiece(Location location) {
-        return board.getOrDefault(location, null);
+        return board.getPiece(location);
     }
 
     void putPiece(Location location, PieceType type, Color color) {
-        if (getPiece(location) != null) throw new RuntimeException("space is occupied");
-        board.put(location, new Piece(type, color));
+        board.putPiece(location, type, color);
     }
 
     private void setupInitialBoard() {
@@ -68,13 +67,13 @@ public class Game {
         };
 
         for (int col = 1; col <= 8; col++) {
-            putPiece(Location.fromCoordinates(col, 1), backRow[col - 1], Color.WHITE);
+            board.putPiece(Location.fromCoordinates(col, 1), backRow[col - 1], Color.WHITE);
 
-            putPiece(Location.fromCoordinates(col, 2), PieceType.Pawn, Color.WHITE);
+            board.putPiece(Location.fromCoordinates(col, 2), PieceType.Pawn, Color.WHITE);
 
-            putPiece(Location.fromCoordinates(col, 7), PieceType.Pawn, Color.BLACK);
+            board.putPiece(Location.fromCoordinates(col, 7), PieceType.Pawn, Color.BLACK);
 
-            putPiece(Location.fromCoordinates(col, 8), backRow[col - 1], Color.BLACK);
+            board.putPiece(Location.fromCoordinates(col, 8), backRow[col - 1], Color.BLACK);
         }
     }
 
@@ -124,7 +123,7 @@ public class Game {
 
             while (currentOptional.isPresent()) {
                 Location destination = currentOptional.get();
-                Piece occupant = getPiece(destination);
+                Piece occupant = board.getPiece(destination);
 
                 if (occupant == null || occupant.getColor() != piece.getColor()) {
                     validMoves.add(new Move(piece, location, destination));
@@ -155,7 +154,7 @@ public class Game {
                 new Location.Shift(-1, -2));
         List<Location> valid = location.getValidDestinations(knightShifts);
         for (Location l : valid) {
-            if (getPiece(l) == null || getPiece(l).getColor() != piece.getColor()) {
+            if (board.getPiece(l) == null || board.getPiece(l).getColor() != piece.getColor()) {
                 validMoves.add(new Move(piece, location, l));
             }
         }
@@ -179,16 +178,16 @@ public class Game {
     }
 
     private boolean locationNotOccupied(Location location) {
-        return getPiece(location) == null;
+        return board.getPiece(location) == null;
     }
 
     private boolean locationOccupiedByAllyOf(Piece piece, Location location) {
-        Piece otherPiece = getPiece(location);
+        Piece otherPiece = board.getPiece(location);
         return otherPiece != null && otherPiece.getColor() == piece.getColor();
     }
 
     private boolean locationOccupiedByOpponentOf(Piece piece, Location location) {
-        Piece otherPiece = getPiece(location);
+        Piece otherPiece = board.getPiece(location);
         return otherPiece != null && otherPiece.getColor() != piece.getColor();
     }
 }
